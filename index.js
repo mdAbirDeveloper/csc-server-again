@@ -2,8 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ObjectId } = require("mongodb");
 
-
-
 const app = express();
 const PORT = 5000;
 
@@ -45,9 +43,19 @@ async function run() {
       }
     });
 
+    app.get("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      // Use a filter to match the product with the specified ID
+      const product = await productCollection.findOne({
+        _id: objectId,
+      });
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      return res.status(200).json(product);
+    });
     
-    
-
     app.get("/products", async (req, res) => {
       const query = {};
       const products = await productCollection.find(query).toArray();
@@ -96,6 +104,19 @@ async function run() {
       if (products) {
         return res.send(products);
       }
+    });
+
+    app.get("/projects/:id", async (req, res) => {
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      // Use a filter to match the product with the specified ID
+      const project = await projectCollection.findOne({
+        _id: objectId,
+      });
+      if (!project) {
+        return res.status(404).json({ message: "project not found" });
+      }
+      return res.status(200).json(project);
     });
 
     app.delete("/projects/:id", async (req, res) => {
