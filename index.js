@@ -26,6 +26,7 @@ async function run() {
     const projectCollection = client.db("csc").collection("projects");
     const reviewCollection = client.db("csc").collection("review");
     const contactCollection = client.db("csc").collection("contact");
+    const cetegoryCollection = client.db("csc").collection("category");
 
     app.post("/products", async (req, res) => {
       const product = req.body;
@@ -134,6 +135,49 @@ async function run() {
           .json({ success: true, message: "Blog deleted successfully" });
       } else {
         res.status(404).json({ success: false, message: "Blog not found" });
+      }
+    });
+
+
+    app.post("/category", async (req, res) => {
+      const product = req.body;
+      try {
+        const result = await cetegoryCollection.insertOne(product);
+        if (result) {
+          res.status(201).send("category added successfully");
+        } else {
+          res.status(500).send("Failed to add category");
+          console.error("Failed to add category");
+        }
+      } catch (error) {
+        console.error("Error adding category:", error);
+        res.status(500).send("Failed to add category");
+      }
+    });
+
+    app.get("/category", async (req, res) => {
+      const query = {};
+      const category = await cetegoryCollection.find(query).toArray();
+      if (category) {
+        return res.send(category);
+      }
+    });
+
+    app.delete("/category/:id", async (req, res) => {
+      const id = req.params.id;
+      // Convert the blog_id to ObjectId
+      const objectId = new ObjectId(id);
+      // Use a filter to match the blog with the specified ID
+      const categoryProject = await cetegoryCollection.findOneAndDelete({
+        _id: objectId,
+      });
+
+      if (categoryProject) {
+        res
+          .status(200)
+          .json({ success: true, message: "category deleted successfully" });
+      } else {
+        res.status(404).json({ success: false, message: "category not found" });
       }
     });
 
