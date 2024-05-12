@@ -23,28 +23,262 @@ async function run() {
   try {
     client.connect();
     const productCollection = client.db("csc").collection("products");
-    const projectCollection = client.db("csc").collection("projects");
-    const reviewCollection = client.db("csc").collection("review");
-    const contactCollection = client.db("csc").collection("contact");
-    const cetegoryCollection = client.db("csc").collection("category");
+    const connectorsCollection = client.db("csc").collection("connectors");
+    const filterCollection = client.db("csc").collection("filter");
+    const pumpsCollection = client.db("csc").collection("fogAndMistPumps");
+    const fogNuzzlesCollection = client.db("csc").collection("fogNuzzles");
+    const hydraulicValvesCollection = client
+      .db("csc")
+      .collection("hydraulicValves");
+    const mistFanCollection = client.db("csc").collection("mistFan");
+    const reviewCollection = client.db("csc").collection("ratings");
 
-    app.post("/products", async (req, res) => {
-      const product = req.body;
-      try {
-        const result = await productCollection.insertOne(product);
-        if (result) {
-          res.status(201).send("Product added successfully");
-        } else {
-          res.status(500).send("Failed to add product");
-          console.error("Failed to add products");
-        }
-      } catch (error) {
-        console.error("Error adding product:", error);
-        res.status(500).send("Failed to add product");
+    app.post("/ratings", async (req, res) => {
+      const data = req.body;
+      const result = await reviewCollection.insertOne(data);
+      if (result) {
+        console.log("rating submitted successfully");
+        res.send(result);
       }
     });
 
-    app.get("/products/:id", async (req, res) => {
+    app.get('/products', async (req, res) =>{
+      const query = {};
+      const result = await productCollection.find(query).toArray();
+      res.send(result)
+    })
+
+    app.get("/ratings/:id", async (req, res) => {
+      try {
+        const connectorsId = req.params.id; // Use req.params.id to get the product ID from the route parameter
+        console.log(connectorsId, "this is query");
+
+        // Find all reviews for the given product ID
+        const allRatings = await reviewCollection
+          .find({
+            connectorsId: { $eq: connectorsId },
+          })
+          .toArray(); // Use productId field for filtering
+        let sum = 0;
+        allRatings.forEach((rating) => {
+          sum += rating.rating; // Assuming each rating has a field named "rating"
+        });
+        const totalRatings = allRatings.length; 
+        const averageRating = sum / totalRatings;
+        res.status(200).json({ success: true, averageRating, totalRatings });
+        console.log(averageRating, "this is averageRating");
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .json({ success: false, error: "Internal server error" });
+      }
+    });
+
+    app.post("/connectors", async (req, res) => {
+      const product = req.body;
+      try {
+        const result = await productCollection.insertOne(product);
+        const connectors = await connectorsCollection.insertOne(product);
+        if (result && connectors) {
+          res.status(201).send("Product and connectors added successfully");
+        } else {
+          res.status(500).send("Failed to add product  and connectors");
+          console.error("Failed to add products and connectors");
+        }
+      } catch (error) {
+        console.error("Error adding product and connectors:", error);
+        res.status(500).send("Failed to add product and connectors");
+      }
+    });
+
+
+
+    app.post("/filter", async (req, res) => {
+      const filter = req.body;
+      try {
+        const result = await productCollection.insertOne(filter);
+        const connectors = await filterCollection.insertOne(filter);
+        if (result && connectors) {
+          res.status(201).send("filter and connectors added successfully");
+          console.log("filter added successfully");
+        } else {
+          res.status(500).send("Failed to add filter  and connectors");
+          console.error("Failed to add filters and connectors");
+        }
+      } catch (error) {
+        console.error("Error adding filter and connectors:", error);
+        res.status(500).send("Failed to add filter and connectors");
+      }
+    });
+
+
+
+    app.post("/fogAndMistPumps", async (req, res) => {
+      const pumps = req.body;
+      try {
+        const result = await productCollection.insertOne(pumps);
+        const pump = await pumpsCollection.insertOne(pumps);
+        if (result && pump) {
+          res.status(201).send("product and pumps added successfully");
+          console.log("pumps added successfully");
+        } else {
+          res.status(500).send("Failed to add pumps  and product");
+          console.error("Failed to add product and pumps");
+        }
+      } catch (error) {
+        console.error("Error adding pumps and product:", error);
+        res.status(500).send("Failed to add pumps and product");
+      }
+    });
+
+
+
+    app.post("/fogNuzzles", async (req, res) => {
+      const fogNuzzles = req.body;
+      try {
+        const result = await productCollection.insertOne(fogNuzzles);
+        const fogNuzzle = await fogNuzzlesCollection.insertOne(fogNuzzles);
+        if (result && fogNuzzle) {
+          res.status(201).send("fogNuzzles and product added successfully");
+          console.log("fogNuzzles added successfully");
+        } else {
+          res.status(500).send("Failed to add product  and fogNuzzles");
+          console.error("Failed to add fogNuzzless and product");
+        }
+      } catch (error) {
+        console.error("Error adding product and fogNuzzles:", error);
+        res.status(500).send("Failed to add product and fogNuzzles");
+      }
+    });
+
+
+
+    app.post("/hydraulicValves", async (req, res) => {
+      const hydraulicValves = req.body;
+      try {
+        const result = await productCollection.insertOne(hydraulicValves);
+        const hydraulicValve = await hydraulicValvesCollection.insertOne(
+          hydraulicValves
+        );
+        if (result && hydraulicValve) {
+          res.status(201).send("product and hydraulicValve added successfully");
+          console.log("hydraulicValve added successfully");
+        } else {
+          res.status(500).send("Failed to add hydraulicValve  and product");
+          console.error("Failed to add product and hydraulicValve");
+        }
+      } catch (error) {
+        console.error("Error adding hydraulicValve and product:", error);
+        res.status(500).send("Failed to add product and hydraulicValve");
+      }
+    });
+
+
+
+    app.post("/mistFan", async (req, res) => {
+      const mistFan = req.body;
+      try {
+        const result = await productCollection.insertOne(mistFan);
+        const mistFans = await mistFanCollection.insertOne(mistFan);
+        if (result && mistFans) {
+          res.status(201).send("product and mistFan added successfully");
+          console.log("mistFan added successfully");
+        } else {
+          res.status(500).send("Failed to add mistFan  and product");
+          console.error("Failed to add product and mistFan");
+        }
+      } catch (error) {
+        console.error("Error adding mistFan and product:", error);
+        res.status(500).send("Failed to add product and mistFan");
+      }
+    });
+
+
+
+
+
+
+    // this is for showing 
+    app.get("/connectors", async (req, res) => {
+      const query = {};
+      const result = await connectorsCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/connectors/:id', async (req, res) =>{
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const deleted = await connectorsCollection.findOneAndDelete({_id: objectId});
+      res.send(deleted)
+    })
+
+    app.get("/filter", async (req, res) => {
+      const query = {};
+      const result = await filterCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/filter/:id', async (req, res) =>{
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const deleted = await filterCollection.findOneAndDelete({_id: objectId});
+      res.send(deleted)
+    })
+
+    app.get("/fogAndMistPumps", async (req, res) => {
+      const query = {};
+      const result = await fogNuzzlesCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/fogAndMistPumps/:id', async (req, res) =>{
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const deleted = await pumpsCollection.findOneAndDelete({_id: objectId});
+      res.send(deleted)
+    })
+
+    app.get("/fogNuzzles", async (req, res) => {
+      const query = {};
+      const result = await fogNuzzlesCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/fogNuzzles/:id', async (req, res) =>{
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const deleted = await fogNuzzlesCollection.findOneAndDelete({_id: objectId});
+      res.send(deleted)
+    })
+
+    app.get("/hydrulicValves", async (req, res) => {
+      const query = {};
+      const result = await hydraulicValvesCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/hydrulicValves/:id', async (req, res) =>{
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const deleted = await hydraulicValvesCollection.findOneAndDelete({_id: objectId});
+      res.send(deleted)
+    })
+
+    app.get("/mistFan", async (req, res) => {
+      const query = {};
+      const result = await mistFanCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    app.delete('/mistFan/:id', async (req, res) =>{
+      const id = req.params.id;
+      const objectId = new ObjectId(id);
+      const deleted = await mistFanCollection.findOneAndDelete({_id: objectId});
+      res.send(deleted)
+    })
+
+    app.get("/showDetail/:id", async (req, res) => {
       const id = req.params.id;
       const objectId = new ObjectId(id);
       // Use a filter to match the product with the specified ID
@@ -56,7 +290,7 @@ async function run() {
       }
       return res.status(200).json(product);
     });
-    
+
     app.get("/products", async (req, res) => {
       const query = {};
       const products = await productCollection.find(query).toArray();
@@ -64,6 +298,7 @@ async function run() {
         return res.send(products);
       }
     });
+
 
     app.delete("/products/:id", async (req, res) => {
       const id = req.params.id;
@@ -83,188 +318,8 @@ async function run() {
       }
     });
 
-    app.post("/projects", async (req, res) => {
-      const project = req.body;
-      try {
-        const result = await projectCollection.insertOne(project);
-        if (result) {
-          res.status(201).send("projects added successfully");
-        } else {
-          res.status(500).send("Failed to add projects");
-          console.error("Failed to add projects");
-        }
-      } catch (error) {
-        console.error("Error adding projects:", error);
-        res.status(500).send("Failed to add projects");
-      }
-    });
+    
 
-    app.get("/projects", async (req, res) => {
-      const query = {};
-      const products = await projectCollection.find(query).toArray();
-      if (products) {
-        return res.send(products);
-      }
-    });
-
-    app.get("/projects/:id", async (req, res) => {
-      const id = req.params.id;
-      const objectId = new ObjectId(id);
-      // Use a filter to match the product with the specified ID
-      const project = await projectCollection.findOne({
-        _id: objectId,
-      });
-      if (!project) {
-        return res.status(404).json({ message: "project not found" });
-      }
-      return res.status(200).json(project);
-    });
-
-    app.delete("/projects/:id", async (req, res) => {
-      const id = req.params.id;
-      // Convert the blog_id to ObjectId
-      const objectId = new ObjectId(id);
-      // Use a filter to match the blog with the specified ID
-      const deleteProject = await projectCollection.findOneAndDelete({
-        _id: objectId,
-      });
-
-      if (deleteProject) {
-        res
-          .status(200)
-          .json({ success: true, message: "Blog deleted successfully" });
-      } else {
-        res.status(404).json({ success: false, message: "Blog not found" });
-      }
-    });
-
-
-    app.post("/category", async (req, res) => {
-      const product = req.body;
-      try {
-        const result = await cetegoryCollection.insertOne(product);
-        if (result) {
-          res.status(201).send("category added successfully");
-        } else {
-          res.status(500).send("Failed to add category");
-          console.error("Failed to add category");
-        }
-      } catch (error) {
-        console.error("Error adding category:", error);
-        res.status(500).send("Failed to add category");
-      }
-    });
-
-    app.get("/category", async (req, res) => {
-      const query = {};
-      const category = await cetegoryCollection.find(query).toArray();
-      if (category) {
-        return res.send(category);
-      }
-    });
-
-    app.delete("/category/:id", async (req, res) => {
-      const id = req.params.id;
-      // Convert the blog_id to ObjectId
-      const objectId = new ObjectId(id);
-      // Use a filter to match the blog with the specified ID
-      const categoryProject = await cetegoryCollection.findOneAndDelete({
-        _id: objectId,
-      });
-
-      if (categoryProject) {
-        res
-          .status(200)
-          .json({ success: true, message: "category deleted successfully" });
-      } else {
-        res.status(404).json({ success: false, message: "category not found" });
-      }
-    });
-
-    app.post("/review", async (req, res) => {
-      const review = req.body;
-      try {
-        const result = await reviewCollection.insertOne(review);
-        if (result) {
-          res.status(201).send("review added successfully");
-        } else {
-          res.status(500).send("Failed to add review");
-          console.error("Failed to add review");
-        }
-      } catch (error) {
-        console.error("Error adding review:", error);
-        res.status(500).send("Failed to add review");
-      }
-    });
-
-    app.get("/review", async (req, res) => {
-      const query = {};
-      const review = await reviewCollection.find(query).toArray();
-      if (review) {
-        return res.send(review);
-      }
-    });
-
-    app.delete("/review/:id", async (req, res) => {
-      const id = req.params.id;
-      // Convert the blog_id to ObjectId
-      const objectId = new ObjectId(id);
-      // Use a filter to match the blog with the specified ID
-      const deleteReview = await reviewCollection.findOneAndDelete({
-        _id: objectId,
-      });
-
-      if (deleteReview) {
-        res
-          .status(200)
-          .json({ success: true, message: "review deleted successfully" });
-      } else {
-        res.status(404).json({ success: false, message: "review not found" });
-      }
-    });
-
-    app.post("/contact", async (req, res) => {
-      const connect = req.body;
-      try {
-        const result = await contactCollection.insertOne(connect);
-        if (result) {
-          res.status(201).send(result);
-        } else {
-          res.status(500).send("Failed to add massage");
-          console.error("Failed to add message");
-        }
-      } catch (error) {
-        console.error("Error adding message:", error);
-        res.status(500).send("Failed to add message");
-      }
-    });
-
-    // this line just for check
-    app.get("/contact", async (req, res) => {
-      const query = {};
-      const review = await contactCollection.find(query).toArray();
-      if (review) {
-        return res.send(review);
-      }
-    });
-
-    app.delete("/contact/:id", async (req, res) => {
-      const id = req.params.id;
-      // Convert the blog_id to ObjectId
-      const objectId = new ObjectId(id);
-      // Use a filter to match the blog with the specified ID
-      const deleteMessage = await contactCollection.findOneAndDelete({
-        _id: objectId,
-      });
-
-      if (deleteMessage) {
-        res
-          .status(200)
-          .json({ success: true, message: "message deleted successfully" });
-      } else {
-        res.status(404).json({ success: false, message: "message not found" });
-      }
-    });
 
     app.get("/", async (req, res) => {
       res.send("server is running");
