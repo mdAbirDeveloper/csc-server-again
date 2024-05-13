@@ -48,32 +48,62 @@ async function run() {
       res.send(result)
     })
 
+    // app.get("/ratings/:id", async (req, res) => {
+    //   try {
+    //     const connectorsId = req.params.id; // Use req.params.id to get the product ID from the route parameter
+    //     console.log(connectorsId, "this is query");
+
+    //     // Find all reviews for the given product ID
+    //     const allRatings = await reviewCollection
+    //       .find({
+    //         connectorsId: { $eq: connectorsId },
+    //       })
+    //       .toArray(); // Use productId field for filtering
+    //     let sum = 0;
+    //     allRatings.forEach((rating) => {
+    //       sum += rating.rating; // Assuming each rating has a field named "rating"
+    //     });
+    //     const totalRatings = allRatings.length; 
+    //     const averageRating = sum / totalRatings;
+    //     res.status(200).json({ success: true, averageRating, totalRatings });
+    //     console.log(averageRating, "this is averageRating");
+    //   } catch (error) {
+    //     console.error(error);
+    //     res
+    //       .status(500)
+    //       .json({ success: false, error: "Internal server error" });
+    //   }
+    // });
+
+
     app.get("/ratings/:id", async (req, res) => {
       try {
-        const connectorsId = req.params.id; // Use req.params.id to get the product ID from the route parameter
+        const connectorsId = req.params.id;
         console.log(connectorsId, "this is query");
-
-        // Find all reviews for the given product ID
+    
         const allRatings = await reviewCollection
           .find({
             connectorsId: { $eq: connectorsId },
           })
-          .toArray(); // Use productId field for filtering
-        let sum = 0;
-        allRatings.forEach((rating) => {
-          sum += rating.rating; // Assuming each rating has a field named "rating"
-        });
-        const totalRatings = allRatings.length; 
+          .toArray();
+    
+        if (allRatings.length === 0) {
+          // Handle case where no ratings are found
+          return res.status(404).json({ success: false, error: "No ratings found for the given ID" });
+        }
+    
+        const totalRatings = allRatings.length;
+        const sum = allRatings.reduce((acc, rating) => acc + rating.rating, 0);
         const averageRating = sum / totalRatings;
+    
         res.status(200).json({ success: true, averageRating, totalRatings });
         console.log(averageRating, "this is averageRating");
       } catch (error) {
         console.error(error);
-        res
-          .status(500)
-          .json({ success: false, error: "Internal server error" });
+        res.status(500).json({ success: false, error: "Internal server error" });
       }
     });
+    
 
     app.post("/connectors", async (req, res) => {
       const product = req.body;
